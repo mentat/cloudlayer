@@ -1,92 +1,63 @@
 package cloudlayer
 
-import "time"
+import (
+	"fmt"
 
-type VolumeDetails struct {
-	VolumeSize     int    // The size of the volume in gigabytes
-	Zone           string // Availability zode
-	Region         string // The region or DC for this instance.
-	OriginSnapshot string
-}
+	"github.com/juju/loggo"
+)
 
-type SnapshotDetails struct {
-	ID           string
-	SnapshotSize int
-	CreatedAt    *time.Time
-}
-
-type InstanceDetails struct {
-	MemorySize   int    // Memory size in gigabytes
-	CPUCores     int    // The number of virtual CPU codes
-	InstanceType string // A instance-type short name
-	BaseImage    string // An AMI or Docker Image
-	Zone         string // Availability zode
-	Region       string // The region or DC for this instance.
-
-	DiskSize       int    // The size of the
-	DiskMountPoint string // Where the disk is to mount on the instance
-	DiskVolume     string // The EBS, Cinder, etc disk volume identifier
-}
-
-type Error struct {
-	Code        string
-	NumericCode int
-	Description string
-}
-
-type Operation struct {
-	ID            string
-	Name          string // The descriptive name of this operation.
-	Status        string // Options are PENDING, RUNNING, or DONE
-	StatusMessage string
-
-	StartTime  *time.Time
-	EndTime    *time.Time
-	IsComplete bool
-	IsError    bool
-	Errors     []Error
-}
-
-// An instance is an active VM/container on a cloud provider.
-type Instance struct {
-	ID               string
-	Details          InstanceDetails
-	CurrentOperation Operation
-	Status           string
-}
+var logger = loggo.GetLogger("cloudlayer")
 
 type CloudLayer interface {
-	// Authorize this cloud layer with just an API key.
-	SimpleAuthorize(apiKey string) error
+	// SimpleAuthorize - Authorize this cloud layer with just an API key.
+	SimpleAuthorize(apiID, apiKey string) error
 
-	// Authorize this cloud layer with a dictionary of values.
+	// DetailedAuthorize - Authorize this cloud layer with a dictionary of values.
 	DetailedAuthorize(authDetails map[string]string) error
 
-	// Create a new instance in this cloud layer.
+	// CreateInstance - Create a new instance in this cloud layer.
 	CreateInstance(details InstanceDetails) (*Instance, error)
+
 	// Remove an instance from this cloudl layer.
-	RemoveInstance(instanceId string) (*Operation, error)
+	RemoveInstance(instanceID string) (*Operation, error)
 
-	// Check the status of a long running operation.
-	CheckOperationStatus(operationId string) (*Operation, error)
+	// GetInstance - Get an instance from the layer.
+	GetInstance(instanceID string) (*Instance, error)
 
-	// Create a new data storage volume.
+	// ListInstances - List the instances in this layer.
+	ListInstances() ([]*Instance, error)
+
+	// CheckOperationStatus - Check the status of a long running operation.
+	CheckOperationStatus(operationID string) (*Operation, error)
+
+	// CreateVolume - Create a new data storage volume.
 	CreateVolume(details VolumeDetails) (*Operation, error)
-	// Remove a data storage volume.
-	RemoveVolume(volumeId string) (*Operation, error)
 
-	// Create a volume snapshot
-	CreateSnapshot(volumnId string) (*Operation, error)
-	// Remove a volume snapshot
-	RemoveSnapshot(volumnId string) (*Operation, error)
-	// List current snapshots
+	// RemoveVolume - Remove a data storage volume.
+	RemoveVolume(volumeID string) (*Operation, error)
+
+	// CreateSnapshot - Create a volume snapshot
+	CreateSnapshot(volumnID string) (*Operation, error)
+
+	// RemoveSnapshot - Remove a volume snapshot
+	RemoveSnapshot(volumnID string) (*Operation, error)
+
+	// ListSnapshots - List current snapshots for the current account
 	ListSnapshots() ([]SnapshotDetails, error)
 }
 
-func GetCloudLayer(cloudName string) (CloudLayer, error) {
+// NewCloudLayer - Create and return a new cloud layer.
+func NewCloudLayer(cloudName string) (CloudLayer, error) {
+	logger.SetLogLevel(loggo.TRACE)
 	switch cloudName {
 	case "openstack":
-		return &OpenStackLayer
+		return &OpenStackLayer{}, nil
+	case "aws":
+		return &AWSLayer{}, nil
+	case "dummy":
+		return NewDummyLayer(), nil
+	case "docker":
+		return NewDockerLayer(), nil
 	}
-	return nil, nil
+	return nil, fmt.Errorf("Could not find cloud layer: %s", cloudName)
 }
