@@ -53,3 +53,18 @@ func (this *OpenStackLayer) CreateVolume(details VolumeDetails) (*Operation, err
 func (this *OpenStackLayer) RemoveVolume(volumeId string) (*Operation, error) {
 	return nil, nil
 }
+
+// Create a volume snapshot
+func (this *OpenStackLayer) CreateSnapshot(volumnId string) (*Operation, error) {
+	return nil, nil
+}
+
+// Remove a volume snapshot
+func (this *OpenStackLayer) RemoveSnapshot(volumnId string) (*Operation, error) {
+	return nil, nil
+}
+
+// List current snapshots for the current account
+func (this *OpenStackLayer) ListSnapshots() ([]SnapshotDetails, error) {
+	return nil, nil
+}
