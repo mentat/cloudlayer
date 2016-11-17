@@ -38,6 +38,10 @@ func (this *OpenStackLayer) CreateInstance(details InstanceDetails) (*Instance, 
 	return nil, nil
 }
 
+func (this *OpenStackLayer) GetInstance(instanceId string) (*Instance, error) {
+	return nil, nil
+}
+
 func (this *OpenStackLayer) RemoveInstance(instanceId string) (*Operation, error) {
 	return nil, nil
 }

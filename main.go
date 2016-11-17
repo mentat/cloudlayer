@@ -13,6 +13,7 @@ type CloudLayer interface {
 	CreateInstance(details InstanceDetails) (*Instance, error)
 	// Remove an instance from this cloudl layer.
 	RemoveInstance(instanceId string) (*Operation, error)
+	GetInstance(instanceId string) (*Instance, error)
 
 	// Check the status of a long running operation.
 	CheckOperationStatus(operationId string) (*Operation, error)
