@@ -1,5 +1,7 @@
 package cloudlayer
 
+import "fmt"
+
 type CloudLayer interface {
 	// Authorize this cloud layer with just an API key.
 	SimpleAuthorize(apiKey string) error
@@ -28,10 +30,10 @@ type CloudLayer interface {
 	ListSnapshots() ([]SnapshotDetails, error)
 }
 
-func GetCloudLayer(cloudName string) (CloudLayer, error) {
+func NewCloudLayer(cloudName string) (CloudLayer, error) {
 	switch cloudName {
 	case "openstack":
 		return &OpenStackLayer{}, nil
 	}
-	return nil, nil
+	return nil, fmt.Errorf("Could not find cloud layer: %s", cloudName)
 }
