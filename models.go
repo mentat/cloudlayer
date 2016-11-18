@@ -25,6 +25,11 @@ type InstanceDetails struct {
 	Zone         string // Availability zode
 	Region       string // The region or DC for this instance.
 	Volumes      []VolumeDetails
+	LaunchTime   *time.Time
+	PublicIP     string
+	PrivateIP    string
+	SubnetID     string // The ID of the subnet this instance is in.
+	VPCID        string // The virtual private cloud ID, if any
 }
 
 type Error struct {

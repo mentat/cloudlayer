@@ -1,10 +1,16 @@
 package cloudlayer
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/juju/loggo"
+)
+
+var logger = loggo.GetLogger("cloudlayer")
 
 type CloudLayer interface {
 	// Authorize this cloud layer with just an API key.
-	SimpleAuthorize(apiKey string) error
+	SimpleAuthorize(apiId, apiKey string) error
 
 	// Authorize this cloud layer with a dictionary of values.
 	DetailedAuthorize(authDetails map[string]string) error
@@ -35,6 +41,8 @@ func NewCloudLayer(cloudName string) (CloudLayer, error) {
 	switch cloudName {
 	case "openstack":
 		return &OpenStackLayer{}, nil
+	case "aws":
+		return &AWSLayer{}, nil
 	}
 	return nil, fmt.Errorf("Could not find cloud layer: %s", cloudName)
 }

@@ -11,7 +11,7 @@ type OpenStackLayer struct {
 	client *gophercloud.ProviderClient
 }
 
-func (this *OpenStackLayer) SimpleAuthorize(apiKey string) error {
+func (this *OpenStackLayer) SimpleAuthorize(apiId, apiKey string) error {
 	return fmt.Errorf("Cannot simple authorize on OpenStack")
 }
 
