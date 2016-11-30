@@ -1,4 +1,4 @@
-// +build aws
+// +build integration
 
 package cloudlayer
 
