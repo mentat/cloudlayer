@@ -1,3 +1,5 @@
+// +build aws
+
 package cloudlayer
 
 import (
@@ -6,8 +8,8 @@ import (
 	"time"
 )
 
-const AWS_ID = "AKIAIVH5C42CYRM3PG4A"
-const AWS_SECRET = "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"
+const AWS_ID = "AKIAIXJQRYICBMMZGFOQ"
+const AWS_SECRET = "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"
 
 func TestAWSAuthorize(t *testing.T) {
 	layer, err := NewCloudLayer("aws")

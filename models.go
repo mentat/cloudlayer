@@ -17,6 +17,12 @@ type SnapshotDetails struct {
 	CreatedAt    *time.Time // When this snapshot was created.
 }
 
+type PortDetails struct {
+	InstancePort int    // The port number to open on the instance, i.e. 22, 80, 443
+	HostPort     int    // Opional: the port number to forward from the host (used for containers)
+	Protocol     string // The protocol, i.e. tcp, udp, icmp
+}
+
 type InstanceDetails struct {
 	MemorySize   int    // Memory size in gigabytes
 	CPUCores     int    // The number of virtual CPU codes
@@ -28,8 +34,9 @@ type InstanceDetails struct {
 	LaunchTime   *time.Time
 	PublicIP     string
 	PrivateIP    string
-	SubnetID     string // The ID of the subnet this instance is in.
-	VPCID        string // The virtual private cloud ID, if any
+	SubnetID     string        // The ID of the subnet this instance is in.
+	VPCID        string        // The virtual private cloud ID, if any
+	ExposedPorts []PortDetails // Ports to expose on the instance, in the format: <portNum>/<protocol>, i.e. 22/tcp. 53/udp
 }
 
 type Error struct {
