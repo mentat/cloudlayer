@@ -53,7 +53,7 @@ func NewCloudLayer(cloudName string) (CloudLayer, error) {
 	case "dummy":
 		return &DummyLayer{}, nil
 	case "docker":
-		return &DockerLayer{}, nil
+		return NewDockerLayer(), nil
 	}
 	return nil, fmt.Errorf("Could not find cloud layer: %s", cloudName)
 }

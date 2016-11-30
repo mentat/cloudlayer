@@ -146,6 +146,15 @@ type dockerCreateResponse struct {
 	Warnings []string
 }
 
+// NewDockerLayer - create a new docker layer with appropriate defaults.
+func NewDockerLayer() *DockerLayer {
+	// Default layer to normal Docker socket.
+	layer := &DockerLayer{
+		dockerAddress: "/var/run/docker.sock",
+	}
+	return layer
+}
+
 // DockerLayer - the interface to the Docker Remote API.
 type DockerLayer struct {
 	dockerAddress string
