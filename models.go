@@ -2,6 +2,7 @@ package cloudlayer
 
 import "time"
 
+// VolumeDetails -
 type VolumeDetails struct {
 	ID             string // The cloud layer specific ID for this volume.
 	VolumeSize     int    // The size of the volume in gigabytes
@@ -11,18 +12,21 @@ type VolumeDetails struct {
 	MountPoint     string // If the volume is mounted, where is it mounted.
 }
 
+// SnapshotDetails -
 type SnapshotDetails struct {
 	ID           string     // The cloud layer specific ID for this snapshot.
 	SnapshotSize int        // The size of this snapshot in gigabytes.
 	CreatedAt    *time.Time // When this snapshot was created.
 }
 
+// PortDetails -
 type PortDetails struct {
 	InstancePort int    // The port number to open on the instance, i.e. 22, 80, 443
 	HostPort     int    // Opional: the port number to forward from the host (used for containers)
 	Protocol     string // The protocol, i.e. tcp, udp, icmp
 }
 
+// InstanceDetails -
 type InstanceDetails struct {
 	MemorySize   int    // Memory size in gigabytes
 	CPUCores     int    // The number of virtual CPU codes
@@ -39,12 +43,14 @@ type InstanceDetails struct {
 	ExposedPorts []PortDetails // Ports to expose on the instance, in the format: <portNum>/<protocol>, i.e. 22/tcp. 53/udp
 }
 
+// Error -
 type Error struct {
 	Code        string // The string identifier for this error.
 	NumericCode int    // A numeric identifier for this error.
 	Description string // A description of the error.
 }
 
+// Operation -
 type Operation struct {
 	ID            string
 	Name          string // The descriptive name of this operation.

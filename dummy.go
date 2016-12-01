@@ -1,7 +1,20 @@
 package cloudlayer
 
+import "math/rand"
+
 // DummyLayer - a sample interface for new layer types.
 type DummyLayer struct {
+	instances map[string]*Instance
+}
+
+func randStringBytesRmndr(n int) string {
+	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
+	}
+	return string(b)
 }
 
 // SimpleAuthorize - Authorize this cloud layer with just an API key.
@@ -16,7 +29,13 @@ func (dummy DummyLayer) DetailedAuthorize(authDetails map[string]string) error {
 
 // CreateInstance - Create a new instance in this cloud layer.
 func (dummy DummyLayer) CreateInstance(details InstanceDetails) (*Instance, error) {
-	return nil, nil
+	inst := &Instance{
+		Details:          details,
+		CurrentOperation: Operation{},
+		Status:           "RUNNING",
+		ID:               randStringBytesRmndr(10),
+	}
+	return inst, nil
 }
 
 // RemoveInstance - Remove an instance from this cloudl layer.
