@@ -10,7 +10,7 @@ var logger = loggo.GetLogger("cloudlayer")
 
 type CloudLayer interface {
 	// SimpleAuthorize - Authorize this cloud layer with just an API key.
-	SimpleAuthorize(apiId, apiKey string) error
+	SimpleAuthorize(apiID, apiKey string) error
 
 	// DetailedAuthorize - Authorize this cloud layer with a dictionary of values.
 	DetailedAuthorize(authDetails map[string]string) error
@@ -19,25 +19,25 @@ type CloudLayer interface {
 	CreateInstance(details InstanceDetails) (*Instance, error)
 
 	// Remove an instance from this cloudl layer.
-	RemoveInstance(instanceId string) (*Operation, error)
+	RemoveInstance(instanceID string) (*Operation, error)
 
 	// GetInstance - Get an instance from the layer.
-	GetInstance(instanceId string) (*Instance, error)
+	GetInstance(instanceID string) (*Instance, error)
 
 	// CheckOperationStatus - Check the status of a long running operation.
-	CheckOperationStatus(operationId string) (*Operation, error)
+	CheckOperationStatus(operationID string) (*Operation, error)
 
 	// CreateVolume - Create a new data storage volume.
 	CreateVolume(details VolumeDetails) (*Operation, error)
 
 	// RemoveVolume - Remove a data storage volume.
-	RemoveVolume(volumeId string) (*Operation, error)
+	RemoveVolume(volumeID string) (*Operation, error)
 
 	// CreateSnapshot - Create a volume snapshot
-	CreateSnapshot(volumnId string) (*Operation, error)
+	CreateSnapshot(volumnID string) (*Operation, error)
 
 	// RemoveSnapshot - Remove a volume snapshot
-	RemoveSnapshot(volumnId string) (*Operation, error)
+	RemoveSnapshot(volumnID string) (*Operation, error)
 
 	// ListSnapshots - List current snapshots for the current account
 	ListSnapshots() ([]SnapshotDetails, error)

@@ -57,7 +57,7 @@ type Operation struct {
 	Errors        []Error    // List of all errors.
 }
 
-// An instance is an active VM/container on a cloud provider.
+// Instance - An instance is an active VM/container on a cloud provider.
 type Instance struct {
 	ID               string          // Unique identifier for this instance on layer.
 	Details          InstanceDetails // The details of the instance.
