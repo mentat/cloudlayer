@@ -28,6 +28,7 @@ type PortDetails struct {
 
 // InstanceDetails -
 type InstanceDetails struct {
+	Hostname     string
 	MemorySize   int    // Memory size in gigabytes
 	CPUCores     int    // The number of virtual CPU codes
 	InstanceType string // A instance-type short name or flavor
@@ -36,6 +37,7 @@ type InstanceDetails struct {
 	Region       string // The region or DC for this instance.
 	Volumes      []VolumeDetails
 	LaunchTime   *time.Time
+	Variables    map[string]string // Environmental variables
 	PublicIP     string
 	PrivateIP    string
 	SubnetID     string        // The ID of the subnet this instance is in.

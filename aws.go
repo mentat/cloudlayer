@@ -223,6 +223,11 @@ func (this *AWSLayer) CreateInstance(details InstanceDetails) (*Instance, error)
 	return inst, nil
 }
 
+// ListInstances - List the instances in this layer.
+func (this *AWSLayer) ListInstances() ([]*Instance, error) {
+	return nil, nil
+}
+
 func (this *AWSLayer) GetInstance(instanceId string) (*Instance, error) {
 
 	ident := this.decodeId(instanceId)

@@ -7,6 +7,14 @@ type DummyLayer struct {
 	instances map[string]*Instance
 }
 
+// NewDummyLayer - Create a new Dummy Layer
+func NewDummyLayer() *DummyLayer {
+	layer := &DummyLayer{
+		instances: make(map[string]*Instance),
+	}
+	return layer
+}
+
 func randStringBytesRmndr(n int) string {
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -35,6 +43,7 @@ func (dummy DummyLayer) CreateInstance(details InstanceDetails) (*Instance, erro
 		Status:           "RUNNING",
 		ID:               randStringBytesRmndr(10),
 	}
+	dummy.instances[inst.ID] = inst
 	return inst, nil
 }
 
@@ -46,6 +55,15 @@ func (dummy DummyLayer) RemoveInstance(instanceID string) (*Operation, error) {
 // GetInstance - Get an instance from the layer.
 func (dummy DummyLayer) GetInstance(instanceID string) (*Instance, error) {
 	return nil, nil
+}
+
+// ListInstances - List the instances in this layer.
+func (dummy DummyLayer) ListInstances() ([]*Instance, error) {
+	ret := make([]*Instance, 0, len(dummy.instances))
+	for _, v := range dummy.instances {
+		ret = append(ret, v)
+	}
+	return ret, nil
 }
 
 // CheckOperationStatus - Check the status of a long running operation.

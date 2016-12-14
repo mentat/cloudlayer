@@ -24,6 +24,9 @@ type CloudLayer interface {
 	// GetInstance - Get an instance from the layer.
 	GetInstance(instanceID string) (*Instance, error)
 
+	// ListInstances - List the instances in this layer.
+	ListInstances() ([]*Instance, error)
+
 	// CheckOperationStatus - Check the status of a long running operation.
 	CheckOperationStatus(operationID string) (*Operation, error)
 
@@ -51,7 +54,7 @@ func NewCloudLayer(cloudName string) (CloudLayer, error) {
 	case "aws":
 		return &AWSLayer{}, nil
 	case "dummy":
-		return &DummyLayer{}, nil
+		return NewDummyLayer(), nil
 	case "docker":
 		return NewDockerLayer(), nil
 	}

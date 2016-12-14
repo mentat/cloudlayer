@@ -136,9 +136,12 @@ type dockerCreateContainerRequest struct {
 	      "NetworkingConfig": {...}
 	  }
 	*/
+	ID           string `json:"Id,omitempty"`
+	Hostname     string `json:"Hostname,omitempty"`
 	Image        string
 	HostConfig   dockerHostConfig
 	ExposedPorts map[string]struct{}
+	Env          []string
 }
 
 type dockerCreateResponse struct {
@@ -198,13 +201,25 @@ func (docker DockerLayer) get(url string, kind interface{}) (interface{}, error)
 	}
 
 	// Create the type that we expect to recieve.
-	kindObj := reflect.New(reflect.TypeOf(kind))
-
-	err = json.NewDecoder(resp.Body).Decode(&kindObj)
-	if err != nil {
-		return nil, err
+	kindType := reflect.TypeOf(kind)
+	if kindType.Kind() == reflect.Array {
+		fmt.Printf("ARRAY")
+		innerType := kindType.Elem()
+		kindObj := reflect.MakeSlice(innerType, 0, 1)
+		err = json.NewDecoder(resp.Body).Decode(&kindObj)
+		if err != nil {
+			return nil, err
+		}
+		return kindObj, nil
+	} else {
+		kindObj := reflect.New(kindType)
+		err = json.NewDecoder(resp.Body).Decode(&kindObj)
+		if err != nil {
+			return nil, err
+		}
+		return kindObj, nil
 	}
-	return kindObj, nil
+
 }
 
 func (docker DockerLayer) delete(url string, kind interface{}) (interface{}, error) {
@@ -307,12 +322,19 @@ func (docker DockerLayer) CreateInstance(details InstanceDetails) (*Instance, er
 		}
 	}
 
+	env := make([]string, 0, len(details.Variables))
+	for k, v := range details.Variables {
+		env = append(env, fmt.Sprintf("%s=%s", k, v))
+	}
+
 	requestObj := dockerCreateContainerRequest{
-		Image: details.BaseImage,
+		Hostname: details.Hostname,
+		Image:    details.BaseImage,
 		HostConfig: dockerHostConfig{
 			PortBindings: hostPorts,
 		},
 		ExposedPorts: exposedPorts,
+		Env:          env,
 	}
 
 	respRaw, err := docker.post("/containers/create", &requestObj, dockerCreateResponse{})
@@ -363,6 +385,31 @@ func (docker DockerLayer) RemoveInstance(instanceID string) (*Operation, error) 
 	}
 
 	return op, nil
+}
+
+// ListInstances - List the instances in this layer.
+func (docker DockerLayer) ListInstances() ([]*Instance, error) {
+	resp, err := docker.get("/containers/json", []dockerCreateContainerRequest{})
+
+	if err != nil {
+		logger.Errorf("Error listing containers: %s", err)
+		return nil, err
+	}
+
+	respReal, ok := resp.([]dockerCreateContainerRequest)
+	if !ok {
+		return nil, fmt.Errorf("Cannot convert types correctly.")
+	}
+
+	ret := make([]*Instance, len(respReal))
+	for i, v := range respReal {
+		inst := &Instance{
+			ID: v.ID,
+		}
+		ret[i] = inst
+	}
+
+	return ret, nil
 }
 
 // GetInstance - Get an instance from the layer.

@@ -34,6 +34,11 @@ func (this *OpenStackLayer) DetailedAuthorize(authDetails map[string]string) err
 	return nil
 }
 
+// ListInstances - List the instances in this layer.
+func (this *OpenStackLayer) ListInstances() ([]*Instance, error) {
+	return nil, nil
+}
+
 func (this *OpenStackLayer) CreateInstance(details InstanceDetails) (*Instance, error) {
 	return nil, nil
 }
