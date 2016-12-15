@@ -48,6 +48,7 @@ type CloudLayer interface {
 
 // NewCloudLayer - Create and return a new cloud layer.
 func NewCloudLayer(cloudName string) (CloudLayer, error) {
+	logger.SetLogLevel(loggo.TRACE)
 	switch cloudName {
 	case "openstack":
 		return &OpenStackLayer{}, nil

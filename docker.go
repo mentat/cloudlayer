@@ -167,6 +167,7 @@ func (docker *DockerLayer) DetailedAuthorize(authDetails map[string]string) erro
 
 // CreateInstance - Create a new instance in this cloud layer.
 func (docker DockerLayer) CreateInstance(details InstanceDetails) (*Instance, error) {
+	logger.Infof("Creating a docker instance from image: %s", details.BaseImage)
 
 	// Create ExposedPorts map
 	exposedPorts := make(map[string]struct{}, len(details.ExposedPorts))
@@ -194,6 +195,7 @@ func (docker DockerLayer) CreateInstance(details InstanceDetails) (*Instance, er
 		Image:    details.BaseImage,
 		HostConfig: dockerHostConfig{
 			PortBindings: hostPorts,
+			Links:        details.LinkedInstances,
 		},
 		ExposedPorts: exposedPorts,
 		Env:          env,

@@ -224,6 +224,7 @@ type dockerHostConfig struct {
 	Binds              []string
 	DNS                []string `json:"Dns"`
 	NetworkMode        string
+	Links              []string
 }
 
 type dockerCreateContainerRequest struct {

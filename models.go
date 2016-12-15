@@ -28,21 +28,22 @@ type PortDetails struct {
 
 // InstanceDetails -
 type InstanceDetails struct {
-	Hostname     string
-	MemorySize   int    // Memory size in gigabytes
-	CPUCores     int    // The number of virtual CPU codes
-	InstanceType string // A instance-type short name or flavor
-	BaseImage    string // An AMI or Docker Image to boot from
-	Zone         string // Availability zode
-	Region       string // The region or DC for this instance.
-	Volumes      []VolumeDetails
-	LaunchTime   *time.Time
-	Variables    map[string]string // Environmental variables
-	PublicIP     string
-	PrivateIP    string
-	SubnetID     string        // The ID of the subnet this instance is in.
-	VPCID        string        // The virtual private cloud ID, if any
-	ExposedPorts []PortDetails // Ports to expose on the instance, in the format: <portNum>/<protocol>, i.e. 22/tcp. 53/udp
+	Hostname        string
+	MemorySize      int    // Memory size in gigabytes
+	CPUCores        int    // The number of virtual CPU codes
+	InstanceType    string // A instance-type short name or flavor
+	BaseImage       string // An AMI or Docker Image to boot from
+	Zone            string // Availability zode
+	Region          string // The region or DC for this instance.
+	Volumes         []VolumeDetails
+	LaunchTime      *time.Time
+	Variables       map[string]string // Environmental variables
+	PublicIP        string
+	PrivateIP       string
+	SubnetID        string        // The ID of the subnet this instance is in.
+	VPCID           string        // The virtual private cloud ID, if any
+	ExposedPorts    []PortDetails // Ports to expose on the instance, in the format: <portNum>/<protocol>, i.e. 22/tcp. 53/udp
+	LinkedInstances []string
 }
 
 // Error -
