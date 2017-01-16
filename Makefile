@@ -1,5 +1,5 @@
 test:
-    go test
+	go test
 
 integration:
-    go test -tags=integration
+	go test -tags=integration
