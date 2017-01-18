@@ -291,9 +291,11 @@ func (docker DockerLayer) GetInstance(instanceID string) (*Instance, error) {
 	}
 
 	inst := &Instance{
-		ID:      respReal.ID,
-		Details: InstanceDetails{},
-		Status:  "",
+		ID: respReal.ID,
+		Details: InstanceDetails{
+			PublicIP: respReal.NetworkSettings.Networks.Bridge.IPAddress,
+		},
+		Status: respReal.State.Status,
 	}
 
 	return inst, nil

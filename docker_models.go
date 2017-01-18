@@ -311,17 +311,18 @@ type dockerInspectResponse struct {
 	       ...
 	   ]
 	*/
-	ID           string `json:"Id,omitempty"`
-	Hostname     string `json:"Hostname,omitempty"`
-	Image        string
-	Path         string
-	RestartCount int
-	HostConfig   dockerHostConfig
-	ExposedPorts map[string]struct{}
-	Env          []string
-	Config       dockerInstanceConfig
-	Mounts       []dockerMount
-	State        dockerState
+	ID              string `json:"Id,omitempty"`
+	Hostname        string `json:"Hostname,omitempty"`
+	Image           string
+	Path            string
+	RestartCount    int
+	HostConfig      dockerHostConfig
+	NetworkSettings dockerNetworkSettings
+	ExposedPorts    map[string]struct{}
+	Env             []string
+	Config          dockerInstanceConfig
+	Mounts          []dockerMount
+	State           dockerState
 }
 
 type dockerCreateResponse struct {
