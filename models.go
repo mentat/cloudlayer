@@ -26,6 +26,13 @@ type PortDetails struct {
 	Protocol     string // The protocol, i.e. tcp, udp, icmp
 }
 
+// NetworkDetails - Either ID or Port is required for openstack
+type NetworkDetails struct {
+	ID      string // UUID of the network (TODO(tvoran): support names here too)
+	Port    string // Specify a port, get the network associated with it
+	FixedIP string // Optional: specific IP address for this network
+}
+
 // InstanceDetails -
 type InstanceDetails struct {
 	Hostname        string
@@ -44,6 +51,7 @@ type InstanceDetails struct {
 	VPCID           string        // The virtual private cloud ID, if any
 	ExposedPorts    []PortDetails // Ports to expose on the instance, in the format: <portNum>/<protocol>, i.e. 22/tcp. 53/udp
 	LinkedInstances []string
+	Networks        []NetworkDetails // Insert NetworkDetails here
 }
 
 // Error -
