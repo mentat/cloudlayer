@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"reflect"
 	"strings"
 )
 
@@ -48,7 +47,7 @@ func (docker DockerLayer) getHTTPClient() *http.Client {
 	return &http.Client{}
 }
 
-func (docker DockerLayer) get(url string, kind interface{}) (interface{}, error) {
+func (docker DockerLayer) get(url string) ([]byte, error) {
 
 	client := docker.getHTTPClient()
 
@@ -62,12 +61,20 @@ func (docker DockerLayer) get(url string, kind interface{}) (interface{}, error)
 		return nil, fmt.Errorf("Error from Docker API, status: %d", resp.StatusCode)
 	}
 
-	// Create the type that we expect to recieve.
+	bytes, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
+
+	/*// Create the type that we expect to recieve.
 	kindType := reflect.TypeOf(kind)
 	if kindType.Kind() == reflect.Array {
-		fmt.Printf("ARRAY")
-		innerType := kindType.Elem()
-		kindObj := reflect.MakeSlice(innerType, 0, 1)
+		fmt.Printf("ARRAY\n")
+		//innerType := kindType.Elem()
+		kindObj := reflect.MakeSlice(kindType, 0, 1)
 		err = json.NewDecoder(resp.Body).Decode(&kindObj)
 		if err != nil {
 			return nil, err
@@ -80,11 +87,11 @@ func (docker DockerLayer) get(url string, kind interface{}) (interface{}, error)
 			return nil, err
 		}
 		return kindObj, nil
-	}
+	}*/
 
 }
 
-func (docker DockerLayer) delete(url string, kind interface{}) (interface{}, error) {
+func (docker DockerLayer) delete(url string) ([]byte, error) {
 
 	client := docker.getHTTPClient()
 	req, err := http.NewRequest("DELETE", docker.getURL(url), nil)
@@ -103,17 +110,16 @@ func (docker DockerLayer) delete(url string, kind interface{}) (interface{}, err
 		return nil, fmt.Errorf("Error from Docker API, status: %d", resp.StatusCode)
 	}
 
-	// Create the type that we expect to recieve.
-	kindObj := reflect.New(reflect.TypeOf(kind))
+	bytes, err := ioutil.ReadAll(resp.Body)
 
-	err = json.NewDecoder(resp.Body).Decode(&kindObj)
 	if err != nil {
 		return nil, err
 	}
-	return kindObj, nil
+
+	return bytes, nil
 }
 
-func (docker DockerLayer) post(url string, data interface{}, kind interface{}) (interface{}, error) {
+func (docker DockerLayer) post(url string, data interface{}) ([]byte, error) {
 
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
@@ -134,19 +140,13 @@ func (docker DockerLayer) post(url string, data interface{}, kind interface{}) (
 		return nil, fmt.Errorf("Error from Docker API, status: %d: %s", resp.StatusCode, body)
 	}
 
-	if kind != nil {
-		// Create the type that we expect to recieve.
-		kindObj := reflect.New(reflect.TypeOf(kind)).Interface()
-		// Decode the JSON to that type.
-		err = json.NewDecoder(resp.Body).Decode(&kindObj)
+	bytes, err := ioutil.ReadAll(resp.Body)
 
-		if err != nil {
-			return nil, err
-		}
-		return kindObj, nil
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, nil
+	return bytes, nil
 }
 
 // SimpleAuthorize - Authorize this cloud layer with just an API key.
@@ -201,19 +201,19 @@ func (docker DockerLayer) CreateInstance(details InstanceDetails) (*Instance, er
 		Env:          env,
 	}
 
-	respRaw, err := docker.post("/containers/create", &requestObj, dockerCreateResponse{})
+	respRaw, err := docker.post("/containers/create", &requestObj)
 	if err != nil {
 		logger.Errorf("Error creating container: %s", err)
 		return nil, err
 	}
 
-	// Type assert the interface from the post method to a hard type.
-	resp, ok := respRaw.(*dockerCreateResponse)
-	if !ok {
-		return nil, fmt.Errorf("Could not type assert response.")
+	resp := dockerCreateResponse{}
+	err = json.Unmarshal(respRaw, &resp)
+	if err != nil {
+		return nil, err
 	}
 
-	_, err = docker.post(fmt.Sprintf("/containers/%s/start", resp.ID), struct{}{}, nil)
+	_, err = docker.post(fmt.Sprintf("/containers/%s/start", resp.ID), struct{}{})
 
 	if err != nil {
 		logger.Errorf("Error starting container: %s %s", resp.ID, err)
@@ -236,7 +236,7 @@ func (docker DockerLayer) CreateInstance(details InstanceDetails) (*Instance, er
 // RemoveInstance - Remove/stop an instance from this cloud layer.
 func (docker DockerLayer) RemoveInstance(instanceID string) (*Operation, error) {
 
-	_, err := docker.post(fmt.Sprintf("/containers/%s/stop", instanceID), struct{}{}, nil)
+	_, err := docker.post(fmt.Sprintf("/containers/%s/stop", instanceID), struct{}{})
 
 	if err != nil {
 		logger.Errorf("Error stopping container: %s %s", instanceID, err)
@@ -253,20 +253,22 @@ func (docker DockerLayer) RemoveInstance(instanceID string) (*Operation, error) 
 
 // ListInstances - List the instances in this layer.
 func (docker DockerLayer) ListInstances() ([]*Instance, error) {
-	resp, err := docker.get("/containers/json", []dockerCreateContainerRequest{})
+	respRaw, err := docker.get("/containers/json")
 
 	if err != nil {
 		logger.Errorf("Error listing containers: %s", err)
 		return nil, err
 	}
 
-	respReal, ok := resp.([]dockerCreateContainerRequest)
-	if !ok {
-		return nil, fmt.Errorf("Cannot convert types correctly.")
+	resp := make([]dockerCreateContainerRequest, 0, 10)
+	err = json.Unmarshal(respRaw, &resp)
+
+	if err != nil {
+		return nil, err
 	}
 
-	ret := make([]*Instance, len(respReal))
-	for i, v := range respReal {
+	ret := make([]*Instance, len(resp))
+	for i, v := range resp {
 		inst := &Instance{
 			ID: v.ID,
 		}
@@ -278,22 +280,26 @@ func (docker DockerLayer) ListInstances() ([]*Instance, error) {
 
 // GetInstance - Get an instance from the layer.
 func (docker DockerLayer) GetInstance(instanceID string) (*Instance, error) {
-	resp, err := docker.get(fmt.Sprintf("/containers/%s/json", instanceID), dockerInspectResponse{})
+	respRaw, err := docker.get(fmt.Sprintf("/containers/%s/json", instanceID))
 
 	if err != nil {
 		logger.Errorf("Error inspecting container: %s", err)
 		return nil, err
 	}
 
-	respReal, ok := resp.(dockerInspectResponse)
-	if !ok {
-		return nil, fmt.Errorf("Cannot convert types correctly.")
+	resp := dockerInspectResponse{}
+	err = json.Unmarshal(respRaw, &resp)
+
+	if err != nil {
+		return nil, err
 	}
 
 	inst := &Instance{
-		ID:      respReal.ID,
-		Details: InstanceDetails{},
-		Status:  "",
+		ID: resp.ID,
+		Details: InstanceDetails{
+			PublicIP: resp.NetworkSettings.Networks.Bridge.IPAddress,
+		},
+		Status: resp.State.Status,
 	}
 
 	return inst, nil
