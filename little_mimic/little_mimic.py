@@ -11,6 +11,9 @@ HOST = "localhost"
 PORT = "8080"
 COMPUTE_URL = "http://{host}:{port}/nova/v2.1/{project_id}"
 NEUTRON_URL = "http://{host}:{port}/neutron/v2.0"
+SERVERS = dict()
+SERVER_IDS = ["00000001-0000-0000-0000-000000000000",
+              "00000002-0000-0000-0000-000000000000"]
 
 
 @route('/v3')
@@ -184,8 +187,63 @@ def network_get(network_id):
 
 @route('/nova/v2.1/<project_id>/servers', method='POST')
 def server_create(project_id):
+    image_id = request.json['server']['imageRef']
+    flavor_id = request.json['server']['flavorRef']
     response.status = 202
-    return {"server": {"id": "fake-server-id"}}
+    server_id = SERVER_IDS.pop()
+    new_server = {"server": {
+        "status": "ACTIVE",
+        "updated": "2017-01-23T17:25:40Z",
+        "hostId": "8e1376bbeee19c6fb07e29eb7876ac26ac81905200a10d3dfac6840c",
+        "OS-EXT-SRV-ATTR:host": "saturn-rpc",
+        "addresses": {
+            "private-net": [{"OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:58:ad:d4", "version": 4, "addr": "10.0.0.77", "OS-EXT-IPS:type": "fixed"}],
+            "external-net": [{"OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:b0:a3:13", "version": 4, "addr": "192.168.1.229", "OS-EXT-IPS:type": "fixed"}]},
+        "links": [{"href": COMPUTE_URL + "/servers/" + server_id, "rel": "self"},
+                  {"href": COMPUTE_URL + "/servers/" + server_id, "rel": "bookmark"}],
+        "key_name": None,  # TODO(tvoran): this should probably not be null
+        "image": {"id": "8591c262-032f-471e-b484-c23c7fbaff1d",
+                  "links": [{"href": "http://{host}:{port}/{project_id}/images/{image_id}".format(host=HOST, port=PORT, project_id=project_id, image_id=image_id), "rel": "bookmark"}]},
+        "OS-EXT-STS:task_state": None,
+        "OS-EXT-STS:vm_state": "active",
+        "OS-EXT-SRV-ATTR:instance_name": "instance-00000157",
+        "OS-SRV-USG:launched_at": "2017-01-23T17:25:40.000000",
+        "OS-EXT-SRV-ATTR:hypervisor_hostname": "saturn-rpc",
+        "flavor": {"id": flavor_id,
+                   "links": [{"href": "http://{host}:{port}/{project_id}/flavors/{flavor_id}".format(host=HOST, port=PORT, project_id=project_id, flavor_id=flavor_id), "rel": "bookmark"}]},
+        "id": server_id,
+        "security_groups": [{"name": "default"}, {"name": "default"}],
+        "OS-SRV-USG:terminated_at": None,
+        "OS-EXT-AZ:availability_zone": "nova",
+        "user_id": "c95c5f5773864aacb5c09498a4e4ad0c",
+        "name": "polka1",
+        "created": "2017-01-23T17:25:27Z",
+        "tenant_id": project_id,
+        "OS-DCF:diskConfig": "MANUAL",
+        "os-extended-volumes:volumes_attached": [],
+        "accessIPv4": "",
+        "accessIPv6": "",
+        "progress": 0,
+        "OS-EXT-STS:power_state": 1,
+        "config_drive": "",
+        "metadata": {}}
+    }
+    SERVERS[server_id] = new_server
+    return new_server
+
+
+# Note: May also need /nova/v2.1/<project_id/servers?name=<server_name> someday
+@route('/nova/v2.1/<project_id>/servers/<server_id>', method='GET')
+def server_get(project_id, server_id):
+    return SERVERS.get(server_id)
+
+
+@route('/nova/v2.1/<project_id>/servers/<server_id>', method='DELETE')
+def server_delete(project_id, server_id):
+    response.status = 202
+    del SERVERS[server_id]
+    SERVER_IDS.insert(0, server_id)
+    return
 
 
 @route('/')
